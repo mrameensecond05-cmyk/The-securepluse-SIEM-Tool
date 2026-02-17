@@ -35,7 +35,11 @@ const Assets: React.FC = () => {
                     <Button variant="outlined" startIcon={<Filter size={20} />}>
                         Filter
                     </Button>
-                    <Button variant="contained" startIcon={<Plus size={20} />}>
+                    <Button
+                        variant="contained"
+                        startIcon={<Plus size={18} />}
+                        onClick={() => window.open('https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh-agent-package-windows.html', '_blank')}
+                    >
                         Add Asset
                     </Button>
                 </Box>

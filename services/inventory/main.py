@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import models, schemas, crud, database
 
+database.wait_for_db(database.engine)
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()

@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
-import { Box, Typography, Container, Paper, Stack, alpha, useTheme, IconButton } from '@mui/material';
+import { Box, Typography, Container, Paper, Stack, alpha, useTheme, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Users, ChevronRight, Activity } from 'lucide-react';
+import { Shield, Lock, Users } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '../store';
+import { loginUser } from '../store/authSlice';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const theme = useTheme();
-    const [selectedRole, setSelectedRole] = useState<'admin' | 'user' | null>(null);
+    const dispatch = useAppDispatch();
+    const { loading, error } = useAppSelector((state) => state.auth);
 
-    const handleRoleSelect = (role: 'admin' | 'user') => {
-        setSelectedRole(role);
-        // Simulate login delay or transition
-        setTimeout(() => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await dispatch(loginUser({ username, password })).unwrap();
             navigate('/dashboard');
-        }, 500);
+        } catch (err) {
+            console.error('Login failed:', err);
+        }
     };
 
     return (
@@ -77,7 +85,7 @@ const LoginPage: React.FC = () => {
                         </Stack>
                     </Box>
 
-                    {/* Right Side: Role Selection */}
+                    {/* Right Side: Login Form */}
                     <Paper
                         elevation={0}
                         sx={{
@@ -91,72 +99,55 @@ const LoginPage: React.FC = () => {
                         }}
                     >
                         <Typography variant="h5" sx={{ mb: 4, fontFamily: 'monospace' }}>
-                            Role-Based Entry
+                            Authorized Access
                         </Typography>
 
-                        <Stack spacing={3}>
-                            {/* SOC Admin Card */}
-                            <Box
-                                onClick={() => handleRoleSelect('admin')}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    border: '1px solid',
-                                    borderColor: selectedRole === 'admin' ? 'primary.main' : 'rgba(255,255,255,0.05)',
-                                    bgcolor: selectedRole === 'admin' ? alpha(theme.palette.primary.main, 0.05) : 'rgba(255,255,255,0.02)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    '&:hover': {
-                                        borderColor: 'primary.main',
-                                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                    },
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between'
-                                }}
-                            >
-                                <Box>
-                                    <Typography variant="h6" sx={{ color: 'text.primary', mb: 0.5 }}>
-                                        SOC Admin
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                        Access Global Audit & Incidents
-                                    </Typography>
-                                </Box>
-                                <Lock size={20} color={theme.palette.primary.main} />
-                            </Box>
+                        {error && (
+                            <Alert severity="error" sx={{ mb: 3 }}>
+                                {error}
+                            </Alert>
+                        )}
 
-                            {/* Security User Card */}
-                            <Box
-                                onClick={() => handleRoleSelect('user')}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    border: '1px solid',
-                                    borderColor: selectedRole === 'user' ? 'secondary.main' : 'rgba(255,255,255,0.05)',
-                                    bgcolor: selectedRole === 'user' ? alpha(theme.palette.secondary.main, 0.05) : 'rgba(255,255,255,0.02)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    '&:hover': {
-                                        borderColor: 'secondary.main',
-                                        bgcolor: alpha(theme.palette.secondary.main, 0.05),
-                                    },
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between'
-                                }}
-                            >
-                                <Box>
-                                    <Typography variant="h6" sx={{ color: 'text.primary', mb: 0.5 }}>
-                                        Security User
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                        Asset Alerts & Feedbacks
-                                    </Typography>
-                                </Box>
-                                <Users size={20} color={theme.palette.secondary.main} />
-                            </Box>
-                        </Stack>
+                        <form onSubmit={handleLogin}>
+                            <Stack spacing={3}>
+                                <TextField
+                                    fullWidth
+                                    label="Username"
+                                    variant="outlined"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    InputProps={{
+                                        startAdornment: <Users size={20} color={theme.palette.text.secondary} style={{ marginRight: 8 }} />,
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Password"
+                                    type="password"
+                                    variant="outlined"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    InputProps={{
+                                        startAdornment: <Lock size={20} color={theme.palette.text.secondary} style={{ marginRight: 8 }} />,
+                                    }}
+                                />
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    size="large"
+                                    disabled={loading}
+                                    sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600 }}
+                                >
+                                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                                </Button>
+                            </Stack>
+                        </form>
+
+                        <Typography variant="caption" sx={{ mt: 3, display: 'block', textAlign: 'center', color: 'text.secondary' }}>
+                            Protected by SecurePulse Auth Gateway.
+                            <br />
+                            Unauthorized access attempts are logged.
+                        </Typography>
                     </Paper>
                 </Box>
             </Container>

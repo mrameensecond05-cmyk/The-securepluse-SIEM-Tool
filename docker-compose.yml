@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  # --- Frontend ---
+  frontend:
+    build: ./frontend
+    restart: always
+    networks:
+      - securepulse-net
+
   # --- Infrastructure ---
   nginx:
     image: nginx:alpine
@@ -12,6 +19,7 @@ services:
     depends_on:
       - api-gateway
       - wazuh-dashboard
+      - frontend
     networks:
       - securepulse-net
 

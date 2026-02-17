@@ -13,14 +13,14 @@ app.use(helmet());
 app.use(express.json());
 
 // Health Check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'healthy', service: 'api-gateway' });
 });
 
 // Auth Middleware (Placeholder for now)
 const authenticateToken = (req, res, next) => {
     // Skip auth for login/register
-    if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/register')) {
+    if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
         return next();
     }
 
@@ -39,11 +39,11 @@ const authenticateToken = (req, res, next) => {
 // Routes
 
 // Auth Routes (Proxy to Auth Service)
-app.use('/auth', createProxyMiddleware({
+app.use('/api/auth', createProxyMiddleware({
     target: 'http://auth-service:8001',
     changeOrigin: true,
     pathRewrite: {
-        '^/auth': '', // Strip /auth prefix when forwarding if service expects root paths
+        '^/api/auth': '', // Strip /api/auth prefix when forwarding
     }
 }));
 

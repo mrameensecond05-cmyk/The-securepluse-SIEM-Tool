@@ -20,3 +20,23 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def wait_for_db(engine):
+    import time
+    from sqlalchemy.exc import OperationalError
+    
+    print("Waiting for database connection...")
+    retries = 30
+    delay = 2
+    
+    for i in range(retries):
+        try:
+            connection = engine.connect()
+            connection.close()
+            print("Database connected!")
+            return
+        except OperationalError:
+            print(f"Database not ready. Retrying in {delay} seconds... ({i+1}/{retries})")
+            time.sleep(delay)
+    
+    raise Exception("Could not connect to database after multiple retries.")

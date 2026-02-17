@@ -1,0 +1,13 @@
+import React from 'react';
+import { Box, Typography, useTheme, Paper, IconButton, LinearProgress, Avatar } from '@mui/material';
+import {
+    Shield, AlertTriangle, Activity, Server, Globe, Cpu, MoreVertical,
+    Wifi, Database, Lock, TrendingUp, TrendingDown
+} from 'lucide-react';
+import {
+    ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+    PieChart, Pie, Cell, Legend, BarChart, Bar, RadialBarChart, RadialBar, LineChart, Line
+} from 'recharts';
+import { alpha } from '@mui/material/styles';
+
+// Removed Grid import - using Box instead for better layout control

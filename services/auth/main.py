@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 import models, schemas, crud, utils, database
 
+database.wait_for_db(database.engine)
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()

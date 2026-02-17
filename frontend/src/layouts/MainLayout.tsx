@@ -68,7 +68,7 @@ const MainLayout: React.FC = () => {
                     </List>
                 </Box>
             </Drawer>
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
                 <Toolbar />
                 <Outlet />
             </Box>

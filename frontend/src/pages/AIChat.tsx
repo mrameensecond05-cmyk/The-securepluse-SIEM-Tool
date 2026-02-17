@@ -52,14 +52,14 @@ const AIChat: React.FC = () => {
 
         try {
             // Call the API Gateway (proxied to ai-service)
-            const response = await fetch('http://localhost:5000/api/ai/chat', {
+            const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     messages: [{ role: "user", content: currentInput }],
-                    model: "llama3", // Default model
+                    model: "phi3", // Using installed phi3 model
                     stream: false
                 })
             });

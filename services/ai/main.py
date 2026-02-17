@@ -16,9 +16,9 @@ async def chat(request: Request):
     try:
         data = await request.json()
         
-        # Default to llama3 if model not specified (or whatever is pulled in Ollama)
+        # Default to phi3 if model not specified
         if "model" not in data:
-            data["model"] = "llama3" 
+            data["model"] = "phi3" 
             
         # Forward to Ollama
         # We use stream=True to potentially support streaming, 

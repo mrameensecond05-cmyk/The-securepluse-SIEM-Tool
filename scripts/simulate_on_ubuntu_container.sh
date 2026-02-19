@@ -2,7 +2,7 @@
 
 # Configuration
 CONTAINER_NAME="securepulse_simulation_server"
-IMAGE_NAME="ubuntu:20.04"
+IMAGE_NAME="ubuntu:18.04"
 PROJECT_DIR=$(pwd)
 CONTAINER_PROJECT_DIR="/home/securepulse/project"
 

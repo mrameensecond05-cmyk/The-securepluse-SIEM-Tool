@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 
 services:
   # --- Frontend ---
@@ -12,8 +12,8 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
-      - "443:443"
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -24,7 +24,7 @@ services:
       - securepulse-net
 
   mysql:
-    image: mysql:8.0
+    image: mysql:5.7
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
@@ -33,7 +33,7 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "0.0.0.0:3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -48,17 +48,17 @@ services:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "8081:80"
+      - "0.0.0.0:8081:80"
     depends_on:
       - mysql
     networks:
       - securepulse-net
 
   redis:
-    image: redis:7.2-alpine
+    image: redis:6.2-alpine
     restart: always
     ports:
-      - "6379:6379"
+      - "0.0.0.0:6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -69,7 +69,7 @@ services:
     build: ./api-gateway
     restart: always
     ports:
-      - "5000:5000"
+      - "0.0.0.0:5000:5000"
     environment:
       - PORT=5000
       - JWT_SECRET=${JWT_SECRET}
@@ -89,7 +89,7 @@ services:
     build: ./services/auth
     restart: always
     ports:
-      - "8001:8001"
+      - "0.0.0.0:8001:8001"
     environment:
       - PORT=8001
       - DB_HOST=mysql
@@ -104,7 +104,7 @@ services:
     build: ./services/inventory
     restart: always
     ports:
-      - "8002:8002"
+      - "0.0.0.0:8002:8002"
     environment:
       - PORT=8002
       - DB_HOST=mysql
@@ -117,7 +117,7 @@ services:
     build: ./services/soc
     restart: always
     ports:
-      - "8003:8003"
+      - "0.0.0.0:8003:8003"
     environment:
       - PORT=8003
       - WAZUH_API_URL=https://wazuh-manager:55000
@@ -133,7 +133,7 @@ services:
     build: ./services/ai
     restart: always
     ports:
-      - "8004:8004"
+      - "0.0.0.0:8004:8004"
     environment:
       - PORT=8004
       - OLLAMA_HOST=http://ollama:11434
@@ -148,7 +148,7 @@ services:
     build: ./services/reports
     restart: always
     ports:
-      - "8005:8005"
+      - "0.0.0.0:8005:8005"
     environment:
       - PORT=8005
       - DB_HOST=mysql
@@ -163,9 +163,9 @@ services:
     hostname: wazuh-manager
     restart: always
     ports:
-      - "1514:1514"
-      - "1515:1515"
-      - "55000:55000"
+      - "0.0.0.0:1514:1514"
+      - "0.0.0.0:1515:1515"
+      - "0.0.0.0:55000:55000"
     volumes:
       - wazuh_api_configuration:/var/ossec/api/configuration
       - wazuh_etc:/var/ossec/etc
@@ -179,7 +179,7 @@ services:
     hostname: wazuh-indexer
     restart: always
     ports:
-      - "9200:9200"
+      - "0.0.0.0:9200:9200"
     environment:
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
@@ -192,7 +192,7 @@ services:
     hostname: wazuh-dashboard
     restart: always
     ports:
-      - "5601:5601"
+      - "0.0.0.0:5601:5601"
     environment:
       - WAZUH_API_URL=https://wazuh-manager:55000
     depends_on:
@@ -204,7 +204,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     ports:
-      - "11434:11434"
+      - "0.0.0.0:11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     networks:
@@ -213,7 +213,7 @@ services:
   chromadb:
     image: chromadb/chroma:latest
     ports:
-      - "8000:8000"
+      - "0.0.0.0:8000:8000"
     volumes:
       - chroma_data:/chroma/chroma
     networks:
@@ -222,6 +222,8 @@ services:
 networks:
   securepulse-net:
     driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
 
 volumes:
   mysql_data:

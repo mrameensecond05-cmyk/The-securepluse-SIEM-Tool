@@ -1,12 +1,12 @@
 import React from 'react';
-import { Box, Typography, Grid, useTheme, Paper, IconButton, LinearProgress, Avatar } from '@mui/material';
+import { Box, Typography, Grid, useTheme, Paper, IconButton, LinearProgress } from '@mui/material';
 import {
-    Shield, AlertTriangle, Activity, Server, Globe, Cpu, MoreVertical,
-    Wifi, Database, Lock, TrendingUp, TrendingDown
+    Shield, AlertTriangle, Activity, Server, Cpu, MoreVertical,
+    Wifi, Database, TrendingUp, TrendingDown
 } from 'lucide-react';
 import {
     ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-    PieChart, Pie, Cell, Legend, BarChart, Bar, RadialBarChart, RadialBar, LineChart, Line
+    PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 import { alpha } from '@mui/material/styles';
 
@@ -35,13 +35,7 @@ const topAttacksData = [
     { name: 'DDoS', value: 30, color: '#3b82f6' },
 ];
 
-const healthData = [
-    { name: 'CPU Usage', value: 45, fill: '#10b981' },
-    { name: 'Memory', value: 72, fill: '#3b82f6' },
-    { name: 'Disk', value: 28, fill: '#f59e0b' },
-];
-
-// --- Components ---
+// --- Dummy Data ---
 
 const GlassCard = ({ children, sx = {}, title, action }: any) => {
     const theme = useTheme();
@@ -150,16 +144,16 @@ const Dashboard: React.FC = () => {
 
             {/* Stats Row */}
             <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatWidget title="Total Threats" value="8,245" trend={{ value: 12, isPositive: false }} icon={Shield} color={theme.palette.error.main} />
                 </Grid>
-                <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatWidget title="Net Traffic" value="452 GB" trend={{ value: 5, isPositive: true }} icon={Activity} color={theme.palette.primary.main} />
                 </Grid>
-                <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatWidget title="Active Agents" value="124" trend={{ value: 2, isPositive: true }} icon={Server} color={theme.palette.success.main} />
                 </Grid>
-                <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <StatWidget title="Vulnerabilities" value="18" trend={{ value: 8, isPositive: false }} icon={AlertTriangle} color={theme.palette.warning.main} />
                 </Grid>
             </Grid>
@@ -167,9 +161,9 @@ const Dashboard: React.FC = () => {
             {/* Main Content Grid */}
             <Grid container spacing={2}>
                 {/* Left Column (Charts) */}
-                <Grid item size={{ xs: 12, md: 8 }} container spacing={2}>
+                <Grid size={{ xs: 12, md: 8 }} container spacing={2}>
                     {/* Traffic & Threats Chart */}
-                    <Grid item size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
                         <GlassCard title="Threat Traffic Correlation">
                             <ResponsiveContainer width="100%" height={320}>
                                 <AreaChart data={alertTrendData}>
@@ -204,7 +198,7 @@ const Dashboard: React.FC = () => {
                     </Grid>
 
                     {/* Attack Types & System Health */}
-                    <Grid item size={{ xs: 12, md: 6 }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <GlassCard title="Top Attack Vectors">
                             <Box sx={{ height: 250 }}>
                                 <ResponsiveContainer width="100%" height="100%">
@@ -222,7 +216,7 @@ const Dashboard: React.FC = () => {
                             </Box>
                         </GlassCard>
                     </Grid>
-                    <Grid item size={{ xs: 12, md: 6 }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <GlassCard title="System Health">
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
                                 {[
@@ -256,9 +250,9 @@ const Dashboard: React.FC = () => {
                 </Grid>
 
                 {/* Right Column (Side Widgets) */}
-                <Grid item size={{ xs: 12, md: 4 }} container spacing={2} direction="column">
+                <Grid size={{ xs: 12, md: 4 }} container spacing={2} direction="column">
                     {/* Severity Pie */}
-                    <Grid item>
+                    <Grid>
                         <GlassCard title="Threat Severity">
                             <Box sx={{ height: 220, position: 'relative' }}>
                                 <ResponsiveContainer width="100%" height="100%">
@@ -290,15 +284,15 @@ const Dashboard: React.FC = () => {
                     </Grid>
 
                     {/* Recent Activity Feed */}
-                    <Grid item sx={{ flexGrow: 1 }}>
+                    <Grid sx={{ flexGrow: 1 }}>
                         <GlassCard title="Recent Live Activity" sx={{ height: '100%', minHeight: 400 }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                                 {[
-                                    { msg: "SSH Brute Force blocked", ip: "192.168.1.105", time: "2m ago", type: "error" },
-                                    { msg: "New Admin Login from US", ip: "10.0.0.5", time: "15m ago", type: "warning" },
-                                    { msg: "Malware signature update", ip: "System", time: "1h ago", type: "success" },
+                                    { msg: "SSH Brute Force blocked", ip: "Internal-VLAN", time: "2m ago", type: "error" },
+                                    { msg: "New Admin Login from US", ip: "External-GW", time: "15m ago", type: "warning" },
+                                    { msg: "Malware signature update", ip: "Cloud-Sync", time: "1h ago", type: "success" },
                                     { msg: "Outbound traffic spike", ip: "Web-Srv-01", time: "3h ago", type: "info" },
-                                    { msg: "Unauthorized port scan", ip: "192.168.1.200", time: "4h ago", type: "error" },
+                                    { msg: "Unauthorized port scan", ip: "DMZ-Zone", time: "4h ago", type: "error" },
                                     { msg: "Database backup complete", ip: "DB-Prod", time: "5h ago", type: "success" },
                                 ].map((item, i) => (
                                     <Box key={i} sx={{

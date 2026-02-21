@@ -23,14 +23,13 @@ interface Alert {
 const generateDummyAlert = (id: number): Alert => {
     const severities: Alert['severity'][] = ['critical', 'high', 'medium', 'low'];
     const categories = ['Malware', 'Intrusion Attempt', 'Policy Violation', 'System Failure', 'Brute Force'];
-    const statuses: Alert['status'][] = ['active', 'investigating', 'resolved', 'dismissed'];
 
     return {
         id: `ALT-2024-${1000 + id}`,
         timestamp: new Date(Date.now() - Math.random() * 86400000).toLocaleString(),
         severity: severities[Math.floor(Math.random() * severities.length)],
         category: categories[Math.floor(Math.random() * categories.length)],
-        source: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        source: `Agent-${Math.floor(Math.random() * 255)}`,
         description: 'Suspicious activity detected on endpoint. Multiple failed login attempts observed.',
         status: 'active'
     };
@@ -52,7 +51,7 @@ const Alerts: React.FC = () => {
             timestamp: new Date().toLocaleString(),
             severity: newAlertData.severity as Alert['severity'],
             category: newAlertData.category,
-            source: '192.168.1.100 (Simulated)',
+            source: 'Simulated-Endpoint',
             description: newAlertData.description || 'Simulated security alert triggered by user.',
             status: 'active'
         };

@@ -26,13 +26,13 @@ def get_alerts():
                     "id": "1",
                     "timestamp": "2024-02-15T10:00:00",
                     "rule": {"level": 12, "description": "SSH Brute Force"},
-                    "agent": {"name": "Web-Server-01", "ip": "192.168.1.10"}
+                    "agent": {"name": "Web-Server-01", "ip": "internal-srv-10"}
                 },
                 {
                     "id": "2",
                     "timestamp": "2024-02-15T10:05:00",
                     "rule": {"level": 7, "description": "New user created"},
-                    "agent": {"name": "DB-Server", "ip": "192.168.1.20"}
+                    "agent": {"name": "DB-Server", "ip": "internal-db-20"}
                 }
             ],
             "totalItems": 2

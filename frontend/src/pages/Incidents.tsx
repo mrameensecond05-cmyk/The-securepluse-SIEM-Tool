@@ -22,7 +22,7 @@ interface Incident {
 // Dummy Data
 const initialIncidents: Incident[] = [
     {
-        id: 'INC-001',
+        id: 'INC-2026-001',
         title: 'Potential Data Exfiltration',
         severity: 'critical',
         status: 'open',
@@ -31,7 +31,7 @@ const initialIncidents: Incident[] = [
         description: 'Large outbound traffic spike detected from HR-Server to unknown IP.'
     },
     {
-        id: 'INC-002',
+        id: 'INC-2026-002',
         title: 'Malware Detected on Dev-01',
         severity: 'high',
         status: 'in_progress',
@@ -40,7 +40,16 @@ const initialIncidents: Incident[] = [
         description: 'Anti-virus flagged suspicious executable. Isolating host.'
     },
     {
-        id: 'INC-003',
+        id: 'INC-2026-003',
+        title: 'Ransomware Activity Detected',
+        severity: 'critical',
+        status: 'in_progress',
+        assignee: 'Sarah Analyst',
+        timestamp: '30 mins ago',
+        description: 'Mass file modification detected on File-SRV-02. Possible encryption in progress.'
+    },
+    {
+        id: 'INC-2026-004',
         title: 'Failed Login Brute Force',
         severity: 'medium',
         status: 'resolved',
@@ -49,13 +58,31 @@ const initialIncidents: Incident[] = [
         description: 'Multiple failed attempts on SSH. IP blocked automatically.'
     },
     {
-        id: 'INC-004',
+        id: 'INC-2026-005',
         title: 'Policy Violation - USB',
         severity: 'low',
         status: 'open',
         assignee: 'Unassigned',
         timestamp: '1 hour ago',
         description: 'Unauthorized USB device plugged into reception PC.'
+    },
+    {
+        id: 'INC-2026-006',
+        title: 'Unusual SQL Admin Activity',
+        severity: 'high',
+        status: 'open',
+        assignee: 'Unassigned',
+        timestamp: '45 mins ago',
+        description: 'Privileged user executing massive table drops in production DB.'
+    },
+    {
+        id: 'INC-2026-007',
+        title: 'Internal Phishing Campaign',
+        severity: 'medium',
+        status: 'resolved',
+        assignee: 'Mike Security',
+        timestamp: '2 days ago',
+        description: 'Internal users reported receiving suspicious emails linking to credential harvester.'
     }
 ];
 
@@ -151,7 +178,7 @@ const Incidents: React.FC = () => {
     );
 
     const KanbanColumn = ({ title, status, icon: Icon, color }: any) => (
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
             <Paper
                 sx={{
                     p: 2,

@@ -15,9 +15,12 @@ const alertTrendData = [
     { name: '00:00', alerts: 12, traffic: 400 },
     { name: '04:00', alerts: 19, traffic: 300 },
     { name: '08:00', alerts: 15, traffic: 550 },
-    { name: '12:00', alerts: 45, traffic: 800 }, // Peak
-    { name: '16:00', alerts: 32, traffic: 600 },
-    { name: '20:00', alerts: 20, traffic: 450 },
+    { name: '12:00', alerts: 45, traffic: 800 },
+    { name: '14:00', alerts: 82, traffic: 950 }, // Major attack start
+    { name: '16:00', alerts: 124, traffic: 1200 }, // Peak attack
+    { name: '18:00', alerts: 65, traffic: 900 },
+    { name: '20:00', alerts: 32, traffic: 600 },
+    { name: '22:00', alerts: 15, traffic: 450 },
     { name: '23:59', alerts: 10, traffic: 300 },
 ];
 
@@ -289,11 +292,17 @@ const Dashboard: React.FC = () => {
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                                 {[
                                     { msg: "SSH Brute Force blocked", ip: "Internal-VLAN", time: "2m ago", type: "error" },
+                                    { msg: "Potential Ransomware execution", ip: "Dev-WS-02", time: "5m ago", type: "error" },
+                                    { msg: "SQL Injection attempt blocked", ip: "WAF-01", time: "8m ago", type: "warning" },
                                     { msg: "New Admin Login from US", ip: "External-GW", time: "15m ago", type: "warning" },
+                                    { msg: "Critical Vulnerability Scanned", ip: "DMZ-Zone", time: "25m ago", type: "error" },
                                     { msg: "Malware signature update", ip: "Cloud-Sync", time: "1h ago", type: "success" },
                                     { msg: "Outbound traffic spike", ip: "Web-Srv-01", time: "3h ago", type: "info" },
                                     { msg: "Unauthorized port scan", ip: "DMZ-Zone", time: "4h ago", type: "error" },
+                                    { msg: "Internal lateral movement detected", ip: "Server-LAN", time: "4h ago", type: "warning" },
                                     { msg: "Database backup complete", ip: "DB-Prod", time: "5h ago", type: "success" },
+                                    { msg: "VPN Connection from RU", ip: "VPN-GW", time: "6h ago", type: "info" },
+                                    { msg: "Privilege Escalation attempt", ip: "Finance-SRV", time: "8h ago", type: "error" },
                                 ].map((item, i) => (
                                     <Box key={i} sx={{
                                         display: 'flex',

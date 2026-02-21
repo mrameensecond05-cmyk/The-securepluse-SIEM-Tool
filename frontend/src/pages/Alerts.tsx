@@ -22,15 +22,24 @@ interface Alert {
 // Dummy Data Generator
 const generateDummyAlert = (id: number): Alert => {
     const severities: Alert['severity'][] = ['critical', 'high', 'medium', 'low'];
-    const categories = ['Malware', 'Intrusion Attempt', 'Policy Violation', 'System Failure', 'Brute Force'];
+    const scenarios = [
+        { category: 'Malware', desc: 'Agent-X flagged suspicious executable in /tmp/hidden. ELF binary attempting network connection.' },
+        { category: 'Intrusion Attempt', desc: 'WAF detected SQL injection payload in POST request to /api/login.' },
+        { category: 'Policy Violation', desc: 'User attempted to access restricted internal HR portal from unauthorized VLAN.' },
+        { category: 'System Failure', desc: 'Critical service "mysql" stopped unexpectedly on DB-Server-01.' },
+        { category: 'Brute Force', desc: '100+ failed SSH login attempts from IP 45.33.22.11 in under 60 seconds.' },
+        { category: 'Data Exfiltration', desc: 'Anomaly: Large outbound traffic spike (4.2GB) detected to unknown destination.' }
+    ];
+
+    const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
     return {
         id: `ALT-2024-${1000 + id}`,
         timestamp: new Date(Date.now() - Math.random() * 86400000).toLocaleString(),
         severity: severities[Math.floor(Math.random() * severities.length)],
-        category: categories[Math.floor(Math.random() * categories.length)],
-        source: `Agent-${Math.floor(Math.random() * 255)}`,
-        description: 'Suspicious activity detected on endpoint. Multiple failed login attempts observed.',
+        category: scenario.category,
+        source: `Agent-${100 + Math.floor(Math.random() * 900)}`,
+        description: scenario.desc,
         status: 'active'
     };
 };

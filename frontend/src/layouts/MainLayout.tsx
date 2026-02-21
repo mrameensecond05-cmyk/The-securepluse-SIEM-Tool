@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, alpha } from '@mui/material';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShieldAlert, Server, Activity, LogOut, Bot, Shield } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, Server, Activity, LogOut, Bot, Shield, FileSearch, Bug, Globe, FileBarChart, Users } from 'lucide-react';
 
 const drawerWidth = 240;
 
@@ -13,6 +13,11 @@ const MainLayout: React.FC = () => {
         { text: 'Assets', icon: <Server size={20} />, path: '/assets' },
         { text: 'Alerts', icon: <ShieldAlert size={20} />, path: '/alerts' },
         { text: 'Incidents', icon: <Activity size={20} />, path: '/incidents' },
+        { text: 'Logs', icon: <FileSearch size={20} />, path: '/logs' },
+        { text: 'Vulnerabilities', icon: <Bug size={20} />, path: '/vulnerabilities' },
+        { text: 'Threat Intel', icon: <Globe size={20} />, path: '/threat-intel' },
+        { text: 'Reports', icon: <FileBarChart size={20} />, path: '/reports' },
+        { text: 'UEBA', icon: <Users size={20} />, path: '/ueba' },
         { text: 'AI Analyst', icon: <Bot size={20} />, path: '/ai' },
     ];
 

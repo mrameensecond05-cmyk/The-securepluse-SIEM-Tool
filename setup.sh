@@ -16,7 +16,7 @@ info() { echo -e "  ${CYAN}ℹ $1${RESET}"; }
 header() { echo -e "\n${BOLD}${CYAN}════════════════════════════════════════════════════════════\n  $1\n════════════════════════════════════════════════════════════${RESET}\n"; }
 step() { echo -e "${BOLD}[$1]${RESET} $2"; }
 
-PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_DIR"
 
 # ─── Step 1: Root Check ──────────────────────────────────────

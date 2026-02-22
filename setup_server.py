@@ -24,7 +24,7 @@ import shutil
 
 # ─── Configuration ───────────────────────────────────────────────────────────
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 REQUIRED_PORTS = [
     (80,    "Nginx / Frontend"),

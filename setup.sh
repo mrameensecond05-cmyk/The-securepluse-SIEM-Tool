@@ -147,8 +147,9 @@ fi
 
 # ─── Step 8: Docker Compose Deploy ───────────────────────────
 step 8 "Deploying with Docker Compose..."
-info "Stopping existing containers..."
-$COMPOSE_CMD down 2>/dev/null || true
+info "Stopping existing containers and cleaning Wazuh data..."
+$COMPOSE_CMD down -v 2>/dev/null || true
+info "Old volumes removed to ensure clean Wazuh security index initialization"
 
 info "Building and starting all services (this may take a few minutes)..."
 $COMPOSE_CMD build --no-cache
@@ -263,7 +264,11 @@ if [ "$MANAGER_READY" = false ] || [ "$INDEXER_READY" = false ] || [ "$DASHBOARD
 fi
 
 # ─── Step 11: Connection Info ─────────────────────────────────
-SERVER_IP=$(hostname -I | awk '{print $1}')
+# Get the real LAN IP (skip Docker bridge IPs like 172.17.x.x)
+SERVER_IP=$(hostname -I | tr ' ' '\n' | grep -v '^172\.17\.' | grep -v '^127\.' | head -1)
+if [ -z "$SERVER_IP" ]; then
+    SERVER_IP=$(hostname -I | awk '{print $1}')
+fi
 
 header "CONNECTION INFORMATION"
 echo -e "  ${BOLD}Server IP:${RESET} ${GREEN}${SERVER_IP}${RESET}"

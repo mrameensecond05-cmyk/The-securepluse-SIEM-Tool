@@ -1,9 +1,8 @@
--- Initial Admin User (Password: admin123)
--- analyst123: $2b$12$R9h/AIPZ9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z (fake hash same style)
+-- Initial Users (Passwords: admin=admin123, analyst=analyst123, jdoe=user123)
 INSERT INTO users (username, email, password_hash, role) VALUES 
-('admin', 'admin@securepulse.local', '$2b$10$EpIxT98hP7/q.o7j6.e5.e7P5.e4.e3.e2.e1.e0.e9.e8.e7.e6', 'admin'),
-('analyst', 'analyst@securepulse.local', '$2b$10$EpIxT98hP7/q.o7j6.e5.e7P5.e4.e3.e2.e1.e0.e9.e8.e7.e6', 'analyst'),
-('jdoe', 'jdoe@securepulse.local', '$2b$10$EpIxT98hP7/q.o7j6.e5.e7P5.e4.e3.e2.e1.e0.e9.e8.e7.e6', 'user');
+('admin', 'admin@securepulse.local', '$2b$12$h8TshoDmZDSPiNksW6nlce6hniFeXZYnb8RDC02LW/POOoujm23cq', 'admin'),
+('analyst', 'analyst@securepulse.local', '$2b$12$aKbWeByA/oWK5D34lP/4c.DvFgh2zzJGClzRlFep9VicUl7nnAOM.', 'analyst'),
+('jdoe', 'jdoe@securepulse.local', '$2b$12$ofC2spBmQQnbXAuOZGcwOOafga04uQV4Nd4judxxijch9ELImXjeO', 'user');
 
 -- Sample Assets
 INSERT INTO assets (name, ip_address, type, criticality, environment) VALUES 

@@ -129,20 +129,21 @@ services:
     networks:
       - securepulse-net
 
-  ai-service:
-    build: ./services/ai
-    restart: always
-    ports:
-      - "8004:8004"
-    environment:
-      - PORT=8004
-      - OLLAMA_HOST=http://ollama:11434
-      - CHROMA_HOST=http://chromadb:8000
-    depends_on:
-      - ollama
-      - chromadb
-    networks:
-      - securepulse-net
+  # ai-service disabled in Lite Mode
+  # ai-service:
+  #   build: ./services/ai
+  #   restart: always
+  #   ports:
+  #     - "8004:8004"
+  #   environment:
+  #     - PORT=8004
+  #     - OLLAMA_HOST=http://ollama:11434
+  #     - CHROMA_HOST=http://chromadb:8000
+  #   depends_on:
+  #     - ollama
+  #     - chromadb
+  #   networks:
+  #     - securepulse-net
 
   reports-service:
     build: ./services/reports
@@ -181,11 +182,16 @@ services:
     ports:
       - "9200:9200"
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms768m -Xmx768m"
+      - "discovery.type=single-node"
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=SecretPassword"
     volumes:
       - wazuh_indexer_data:/var/lib/wazuh-indexer
     networks:
-      - securepulse-net
+      securepulse-net:
+        aliases:
+          - wazuh.indexer
+          - wazuh-indexer
 
   wazuh-dashboard:
     image: wazuh/wazuh-dashboard:4.7.2
@@ -195,29 +201,37 @@ services:
       - "5601:5601"
     environment:
       - WAZUH_API_URL=https://wazuh-manager:55000
+      - INDEXER_URL=https://wazuh-indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
+      - DASHBOARD_USERNAME=admin
+      - DASHBOARD_PASSWORD=SecretPassword
+      - WAZUH_MANAGER=wazuh-manager
+      - OPENSEARCH_DASHBOARDS_TRUSTANYCERT=true
+      - OPENSEARCH_HOSTS=https://wazuh-indexer:9200
     depends_on:
       - wazuh-indexer
     networks:
       - securepulse-net
+  # AI services disabled in Lite Mode to save RAM
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - securepulse-net
 
-  # --- AI ---
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - securepulse-net
+  # chromadb:
+  #   image: chromadb/chroma:latest
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - chroma_data:/chroma/chroma
+  #   networks:
+  #     - securepulse-net
 
-  chromadb:
-    image: chromadb/chroma:latest
-    ports:
-      - "8000:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
-    networks:
-      - securepulse-net
 
 networks:
   securepulse-net:

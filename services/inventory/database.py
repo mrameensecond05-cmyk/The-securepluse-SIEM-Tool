@@ -26,7 +26,7 @@ def wait_for_db(engine):
     from sqlalchemy.exc import OperationalError
     
     print("Waiting for database connection...")
-    retries = 30
+    retries = 60
     delay = 2
     
     for i in range(retries):

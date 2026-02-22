@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import client from '../api/client';
 
 interface AuthState {
@@ -20,8 +20,14 @@ export const loginUser = createAsyncThunk(
     'auth/login',
     async (credentials: any, { rejectWithValue }) => {
         try {
-            // Note: URL is relative to baseURL '/api', so it calls '/api/auth/login'
-            const response = await client.post('/auth/login', credentials);
+            // Auth service uses OAuth2PasswordRequestForm which expects form-encoded data
+            const formData = new URLSearchParams();
+            formData.append('username', credentials.username);
+            formData.append('password', credentials.password);
+
+            const response = await client.post('/auth/login', formData, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.data && error.response.data.detail) {

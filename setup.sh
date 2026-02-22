@@ -1,7 +1,7 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
 #  SecurePulse SIEM Tool - Server Setup
-#  Run on Ubuntu 20 VM: sudo bash scripts/setup.sh
+#  Run on Ubuntu 20 VM: sudo bash setup.sh
 # ═══════════════════════════════════════════════════════════════
 
 set -e

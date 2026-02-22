@@ -157,11 +157,11 @@ $COMPOSE_CMD up -d
 info "Container status:"
 $COMPOSE_CMD ps
 
-# ─── Step 9: Health Checks ───────────────────────────────────
-step 9 "Verifying services..."
-info "Waiting for services to start (up to 60s)..."
+# ─── Step 9: Health Checks (App Services) ────────────────────
+step 9 "Verifying application services..."
+info "Waiting for app services to start (up to 90s)..."
 
-for i in $(seq 1 12); do
+for i in $(seq 1 18); do
     sleep 5
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/health --max-time 3 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" = "200" ]; then
@@ -172,7 +172,6 @@ for i in $(seq 1 12); do
 done
 
 echo ""
-# Check each service
 declare -A SERVICES=(
     ["API Gateway"]="http://localhost:5000/api/health"
     ["Auth Service"]="http://localhost:8001/health"
@@ -190,15 +189,80 @@ for NAME in "${!SERVICES[@]}"; do
     fi
 done
 
-# Wazuh Manager
-WAZUH_CODE=$(curl -sk -o /dev/null -w "%{http_code}" https://localhost:55000 --max-time 5 2>/dev/null || echo "000")
-if [ "$WAZUH_CODE" = "200" ] || [ "$WAZUH_CODE" = "401" ]; then
-    ok "$(printf '%-20s' "Wazuh Manager") → $WAZUH_CODE (running)"
-else
-    warn "$(printf '%-20s' "Wazuh Manager") → $WAZUH_CODE (may still be starting)"
+# ─── Step 10: Wazuh Startup (takes 3-7 minutes) ─────────────
+step 10 "Waiting for Wazuh components to initialize..."
+echo ""
+info "Wazuh has 3 components that start in sequence:"
+info "  ① Wazuh Manager   → loads 3000+ security rules"
+info "  ② Wazuh Indexer   → starts OpenSearch JVM & builds indices"
+info "  ③ Wazuh Dashboard → connects to Manager + Indexer"
+info ""
+info "This typically takes 3-7 minutes on a VM. Please be patient..."
+echo ""
+
+MAX_WAIT=420  # 7 minutes max
+ELAPSED=0
+INTERVAL=15
+MANAGER_READY=false
+INDEXER_READY=false
+DASHBOARD_READY=false
+
+while [ $ELAPSED -lt $MAX_WAIT ]; do
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+    MINS=$((ELAPSED / 60))
+    SECS=$((ELAPSED % 60))
+
+    # Check Wazuh Manager
+    if [ "$MANAGER_READY" = false ]; then
+        M_CODE=$(curl -sk -o /dev/null -w "%{http_code}" https://localhost:55000 --max-time 5 2>/dev/null || echo "000")
+        if [ "$M_CODE" = "200" ] || [ "$M_CODE" = "401" ]; then
+            ok "Wazuh Manager    ready! (${MINS}m ${SECS}s)"
+            MANAGER_READY=true
+        fi
+    fi
+
+    # Check Wazuh Indexer
+    if [ "$INDEXER_READY" = false ]; then
+        I_CODE=$(curl -sk -o /dev/null -w "%{http_code}" https://localhost:9200 --max-time 5 2>/dev/null || echo "000")
+        if [ "$I_CODE" = "200" ] || [ "$I_CODE" = "401" ]; then
+            ok "Wazuh Indexer    ready! (${MINS}m ${SECS}s)"
+            INDEXER_READY=true
+        fi
+    fi
+
+    # Check Wazuh Dashboard
+    if [ "$DASHBOARD_READY" = false ]; then
+        D_CODE=$(curl -sk -o /dev/null -w "%{http_code}" https://localhost:5601 --max-time 5 2>/dev/null || echo "000")
+        if [ "$D_CODE" = "200" ] || [ "$D_CODE" = "302" ]; then
+            ok "Wazuh Dashboard  ready! (${MINS}m ${SECS}s)"
+            DASHBOARD_READY=true
+        fi
+    fi
+
+    # All ready?
+    if [ "$MANAGER_READY" = true ] && [ "$INDEXER_READY" = true ] && [ "$DASHBOARD_READY" = true ]; then
+        echo ""
+        ok "All Wazuh components are ready!"
+        break
+    fi
+
+    # Status line
+    M_SYM="⏳"; I_SYM="⏳"; D_SYM="⏳"
+    [ "$MANAGER_READY" = true ] && M_SYM="✅"
+    [ "$INDEXER_READY" = true ] && I_SYM="✅"
+    [ "$DASHBOARD_READY" = true ] && D_SYM="✅"
+    printf "\r  ${CYAN}⏱ ${MINS}m ${SECS}s elapsed  │  Manager: ${M_SYM}  Indexer: ${I_SYM}  Dashboard: ${D_SYM}${RESET}    "
+done
+
+echo ""
+if [ "$MANAGER_READY" = false ] || [ "$INDEXER_READY" = false ] || [ "$DASHBOARD_READY" = false ]; then
+    warn "Some Wazuh components are still starting after 7 minutes."
+    warn "This is normal on low-resource VMs. They will be ready soon."
+    info "You can check manually: curl -sk https://localhost:5601"
 fi
 
-# ─── Step 10: Connection Info ─────────────────────────────────
+# ─── Step 11: Connection Info ─────────────────────────────────
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
 header "CONNECTION INFORMATION"

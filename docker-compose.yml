@@ -187,10 +187,7 @@ services:
     volumes:
       - wazuh_indexer_data:/var/lib/wazuh-indexer
     networks:
-      securepulse-net:
-        aliases:
-          - wazuh.indexer
-          - wazuh-indexer
+      - securepulse-net
 
   wazuh-dashboard:
     image: wazuh/wazuh-dashboard:4.7.2
@@ -234,8 +231,6 @@ services:
 networks:
   securepulse-net:
     driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "false"
 
 volumes:
   mysql_data:

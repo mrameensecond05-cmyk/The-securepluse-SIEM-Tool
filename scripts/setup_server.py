@@ -246,6 +246,47 @@ def git_pull():
     else:
         print_warn("Git pull failed — continuing with current code")
 
+# ─── Step 5: Create .env File ───────────────────────────────────────────────
+
+ENV_CONTENT = """# Database Configuration
+DB_ROOT_PASSWORD=securepluse
+DB_USER=securepulse
+DB_PASSWORD=securepluse
+
+# JWT Secret
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Wazuh API Credentials
+WAZUH_API_USER=wazuh-wui
+WAZUH_API_PASSWORD=wazuh-wui
+
+# Wazuh Indexer Credentials (used by wazuh-indexer and wazuh-dashboard)
+WAZUH_INDEXER_USERNAME=admin
+WAZUH_INDEXER_PASSWORD=SecretPassword1!
+"""
+
+def create_env_file():
+    print_step("6b", "Checking .env file...")
+    env_path = os.path.join(PROJECT_DIR, ".env")
+    
+    if os.path.exists(env_path):
+        # Check if it has the required Wazuh Indexer vars
+        with open(env_path, "r") as f:
+            content = f.read()
+        
+        if "WAZUH_INDEXER_USERNAME" in content and "WAZUH_INDEXER_PASSWORD" in content:
+            print_ok(".env file exists with all required variables")
+            return
+        else:
+            print_warn(".env is missing Wazuh Indexer credentials, recreating...")
+    else:
+        print_warn(".env file not found (gitignored), creating it...")
+    
+    with open(env_path, "w") as f:
+        f.write(ENV_CONTENT.strip() + "\n")
+    
+    print_ok(f".env file created at {env_path}")
+
 # ─── Step 5: Docker Compose Deploy ──────────────────────────────────────────
 
 def docker_deploy(compose_cmd):
@@ -370,7 +411,10 @@ def main():
     # Step 4: Git pull
     git_pull()
     
-    # Step 5: Deploy
+    # Step 5: Create .env if missing
+    create_env_file()
+    
+    # Step 6: Deploy
     success = docker_deploy(compose_cmd)
     
     if success:

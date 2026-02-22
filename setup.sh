@@ -59,30 +59,39 @@ fi
 
 # ─── Step 4: Install Docker Compose ──────────────────────────
 step 4 "Checking Docker Compose..."
-COMPOSE_CMD=""
-if docker compose version &>/dev/null; then
+COMPOSE_VERSION=""
+if docker compose version &>/dev/null 2>&1; then
     ok "Docker Compose v2: $(docker compose version)"
-    COMPOSE_CMD="docker compose"
-elif docker-compose --version &>/dev/null; then
+    COMPOSE_VERSION="v2"
+elif docker-compose --version &>/dev/null 2>&1; then
     ok "Docker Compose v1: $(docker-compose --version)"
-    COMPOSE_CMD="docker-compose"
+    COMPOSE_VERSION="v1"
 else
     warn "Docker Compose not found. Installing..."
     apt-get install -y -qq docker-compose-plugin 2>/dev/null || true
-    if docker compose version &>/dev/null; then
+    if docker compose version &>/dev/null 2>&1; then
         ok "Docker Compose v2 plugin installed!"
-        COMPOSE_CMD="docker compose"
+        COMPOSE_VERSION="v2"
     else
         apt-get install -y -qq docker-compose 2>/dev/null || true
-        if docker-compose --version &>/dev/null; then
+        if docker-compose --version &>/dev/null 2>&1; then
             ok "Docker Compose v1 installed!"
-            COMPOSE_CMD="docker-compose"
+            COMPOSE_VERSION="v1"
         else
             fail "Failed to install Docker Compose"
             exit 1
         fi
     fi
 fi
+
+# Wrapper function to call the correct docker compose command
+compose_cmd() {
+    if [ "$COMPOSE_VERSION" = "v2" ]; then
+        docker compose "$@"
+    else
+        docker-compose "$@"
+    fi
+}
 
 # ─── Step 5: Firewall Ports ──────────────────────────────────
 step 5 "Configuring firewall..."
@@ -148,15 +157,15 @@ fi
 # ─── Step 8: Docker Compose Deploy ───────────────────────────
 step 8 "Deploying with Docker Compose..."
 info "Stopping existing containers and cleaning Wazuh data..."
-$COMPOSE_CMD down -v 2>/dev/null || true
+compose_cmd down -v 2>/dev/null || true
 info "Old volumes removed to ensure clean Wazuh security index initialization"
 
 info "Building and starting all services (this may take a few minutes)..."
-$COMPOSE_CMD build --no-cache
-$COMPOSE_CMD up -d
+compose_cmd build --no-cache
+compose_cmd up -d
 
 info "Container status:"
-$COMPOSE_CMD ps
+compose_cmd ps
 
 # ─── Step 9: Health Checks (App Services) ────────────────────
 step 9 "Verifying application services..."

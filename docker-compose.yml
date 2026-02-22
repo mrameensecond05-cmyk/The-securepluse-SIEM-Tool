@@ -171,6 +171,14 @@ services:
       - wazuh_etc:/var/ossec/etc
       - wazuh_logs:/var/ossec/logs
       - wazuh_queue:/var/ossec/queue
+      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh-manager.pem:/etc/ssl/filebeat.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh-manager-key.pem:/etc/ssl/filebeat-key.pem
+    environment:
+      - INDEXER_URL=https://wazuh-indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword1!
+      - FILEBEAT_SSL_VERIFICATION_MODE=none
     networks:
       - securepulse-net
 
@@ -181,11 +189,24 @@ services:
     ports:
       - "9200:9200"
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms768m -Xmx768m"
-      - "discovery.type=single-node"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "bootstrap.memory_lock=true"
       - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=${WAZUH_INDEXER_PASSWORD}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     volumes:
       - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/certs/root-ca.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh-indexer-key.pem:/usr/share/wazuh-indexer/certs/wazuh-indexer-key.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh-indexer.pem:/usr/share/wazuh-indexer/certs/wazuh-indexer.pem
+      - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/certs/admin.pem
+      - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/certs/admin-key.pem
+      - ./config/wazuh_indexer/wazuh.indexer.yml:/usr/share/wazuh-indexer/opensearch.yml
     networks:
       - securepulse-net
 
@@ -196,17 +217,20 @@ services:
     ports:
       - "5601:5601"
     environment:
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword1!
       - WAZUH_API_URL=https://wazuh-manager:55000
-      - INDEXER_URL=https://wazuh-indexer:9200
-      - INDEXER_USERNAME=${WAZUH_INDEXER_USERNAME}
-      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD}
-      - DASHBOARD_USERNAME=${WAZUH_INDEXER_USERNAME}
-      - DASHBOARD_PASSWORD=${WAZUH_INDEXER_PASSWORD}
-      - WAZUH_MANAGER=wazuh-manager
-      - OPENSEARCH_DASHBOARDS_TRUSTANYCERT=true
-      - OPENSEARCH_HOSTS=https://wazuh-indexer:9200
+      - DASHBOARD_USERNAME=kibanaserver
+      - DASHBOARD_PASSWORD=kibanaserver
+    volumes:
+      - ./config/wazuh_indexer_ssl_certs/wazuh-dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh-dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
+      - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+      - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
     depends_on:
       - wazuh-indexer
+      - wazuh-manager
     networks:
       - securepulse-net
   # AI services

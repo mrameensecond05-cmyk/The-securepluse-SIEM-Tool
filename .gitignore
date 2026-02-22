@@ -56,3 +56,4 @@ api-gateway/node_modules/
 # Database backups
 *.sql.gz
 backup_*.sql
+config/wazuh_indexer_ssl_certs/

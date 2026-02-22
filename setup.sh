@@ -154,8 +154,34 @@ EOF
     ok ".env file created"
 fi
 
-# ─── Step 8: Docker Compose Deploy ───────────────────────────
-step 8 "Deploying with Docker Compose..."
+# ─── Step 8: Generate Wazuh SSL Certificates ─────────────────
+step 8 "Generating Wazuh SSL certificates..."
+CERTS_DIR="$PROJECT_DIR/config/wazuh_indexer_ssl_certs"
+
+if [ -f "$CERTS_DIR/root-ca.pem" ] && [ -f "$CERTS_DIR/wazuh-indexer.pem" ]; then
+    ok "SSL certificates already exist, skipping generation"
+else
+    info "Generating SSL certificates using Wazuh cert generator..."
+    rm -rf "$CERTS_DIR" 2>/dev/null
+    mkdir -p "$CERTS_DIR"
+
+    docker run --rm \
+        -v "$CERTS_DIR:/certificates/" \
+        -v "$PROJECT_DIR/config/certs.yml:/config/certs.yml" \
+        wazuh/wazuh-certs-generator:0.0.2
+
+    if [ -f "$CERTS_DIR/root-ca.pem" ]; then
+        # Copy root-ca for manager (it needs its own copy)
+        cp "$CERTS_DIR/root-ca.pem" "$CERTS_DIR/root-ca-manager.pem"
+        ok "SSL certificates generated successfully"
+    else
+        fail "SSL certificate generation failed"
+        warn "Wazuh Dashboard may not start without certificates"
+    fi
+fi
+
+# ─── Step 9: Docker Compose Deploy ───────────────────────────
+step 9 "Deploying with Docker Compose..."
 info "Stopping existing containers and cleaning Wazuh data..."
 compose_cmd down -v 2>/dev/null || true
 info "Old volumes removed to ensure clean Wazuh security index initialization"
@@ -168,7 +194,7 @@ info "Container status:"
 compose_cmd ps
 
 # ─── Step 9: Health Checks (App Services) ────────────────────
-step 9 "Verifying application services..."
+step 10 "Verifying application services..."
 info "Waiting for app services to start (up to 90s)..."
 
 for i in $(seq 1 18); do
@@ -200,7 +226,7 @@ for NAME in "${!SERVICES[@]}"; do
 done
 
 # ─── Step 10: Wazuh Startup (takes 3-7 minutes) ─────────────
-step 10 "Waiting for Wazuh components to initialize..."
+step 11 "Waiting for Wazuh components to initialize..."
 echo ""
 info "Wazuh has 3 components that start in sequence:"
 info "  ① Wazuh Manager   → loads 3000+ security rules"
@@ -272,7 +298,7 @@ if [ "$MANAGER_READY" = false ] || [ "$INDEXER_READY" = false ] || [ "$DASHBOARD
     info "You can check manually: curl -sk https://localhost:5601"
 fi
 
-# ─── Step 11: Connection Info ─────────────────────────────────
+# ─── Step 12: Connection Info ─────────────────────────────────
 # Get the real LAN IP (skip Docker bridge IPs like 172.17.x.x)
 SERVER_IP=$(hostname -I | tr ' ' '\n' | grep -v '^172\.17\.' | grep -v '^127\.' | head -1)
 if [ -z "$SERVER_IP" ]; then

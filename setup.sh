@@ -26,7 +26,7 @@ info "Project directory: $PROJECT_DIR"
 step 1 "Checking root privileges..."
 if [ "$EUID" -ne 0 ]; then
     fail "This script must be run as root (use sudo)"
-    info "Run: sudo bash scripts/setup.sh"
+    info "Run: sudo bash setup.sh"
     exit 1
 fi
 ok "Running as root"

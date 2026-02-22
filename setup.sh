@@ -151,7 +151,8 @@ info "Stopping existing containers..."
 $COMPOSE_CMD down 2>/dev/null || true
 
 info "Building and starting all services (this may take a few minutes)..."
-$COMPOSE_CMD up -d --build
+$COMPOSE_CMD build --no-cache
+$COMPOSE_CMD up -d
 
 info "Container status:"
 $COMPOSE_CMD ps

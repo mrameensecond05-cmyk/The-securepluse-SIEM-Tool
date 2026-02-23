@@ -72,7 +72,6 @@ services:
       - "5000:5000"
     environment:
       - PORT=5000
-      - JWT_SECRET=${JWT_SECRET}
       - REDIS_URL=redis://redis:6379
       - DB_HOST=mysql
       - DB_USER=${DB_USER}
@@ -178,7 +177,7 @@ services:
     environment:
       - INDEXER_URL=https://wazuh-indexer:9200
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword1!
+      - INDEXER_PASSWORD=admin
       - FILEBEAT_SSL_VERIFICATION_MODE=none
       - WAZUH_CLUSTER_DISABLED=true
       - API_USERNAME=${WAZUH_API_USER}
@@ -222,7 +221,7 @@ services:
       - "5601:5601"
     environment:
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword1!
+      - INDEXER_PASSWORD=admin
       - WAZUH_API_URL=https://wazuh-manager:55000
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver

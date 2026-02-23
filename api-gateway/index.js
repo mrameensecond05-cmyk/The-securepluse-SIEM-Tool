@@ -1,8 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const jwt = require('jsonwebtoken');
+const http = require('http');
 require('dotenv').config();
 
 const app = express();
@@ -17,46 +16,79 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'healthy', service: 'api-gateway' });
 });
 
-// Auth Middleware - Disabled (no security authentication needed)
-const authenticateToken = (req, res, next) => {
-    // Auth is disabled - pass through all requests
-    next();
-};
-
-// Routes
-
-// Auth Routes (Proxy to Auth Service)
-app.use('/api/auth', createProxyMiddleware({
-    target: 'http://auth-service:8001',
-    changeOrigin: true,
-    pathRewrite: {
-        '^/api/auth': '', // Strip /api/auth prefix when forwarding
+// Generic proxy function using native http module
+function proxyRequest(serviceName, servicePort, stripPrefix, req, res) {
+    // Build the target path
+    let targetPath = req.originalUrl;
+    if (stripPrefix) {
+        targetPath = targetPath.replace(stripPrefix, '') || '/';
     }
-}));
 
-// Inventory Routes (Protected)
-app.use('/api/inventory', authenticateToken, createProxyMiddleware({
-    target: 'http://inventory-service:8002',
-    changeOrigin: true
-}));
+    const options = {
+        hostname: serviceName,
+        port: servicePort,
+        path: targetPath,
+        method: req.method,
+        headers: {
+            ...req.headers,
+            host: `${serviceName}:${servicePort}`,
+        },
+        timeout: 10000,
+    };
 
-// SOC Routes (Protected)
-app.use('/api/soc', authenticateToken, createProxyMiddleware({
-    target: 'http://soc-service:8003',
-    changeOrigin: true
-}));
+    const proxyReq = http.request(options, (proxyRes) => {
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        proxyRes.pipe(res, { end: true });
+    });
 
-// AI Routes (Protected)
-app.use('/api/ai', createProxyMiddleware({
-    target: 'http://ai-service:8004',
-    changeOrigin: true
-}));
+    proxyReq.on('error', (err) => {
+        console.error(`Proxy error to ${serviceName}:${servicePort}: ${err.message}`);
+        if (!res.headersSent) {
+            res.status(502).json({ detail: `Service ${serviceName} is unavailable` });
+        }
+    });
 
-// Reports Routes (Protected)
-app.use('/api/reports', authenticateToken, createProxyMiddleware({
-    target: 'http://reports-service:8005',
-    changeOrigin: true
-}));
+    proxyReq.on('timeout', () => {
+        proxyReq.destroy();
+        if (!res.headersSent) {
+            res.status(504).json({ detail: `Service ${serviceName} timed out` });
+        }
+    });
+
+    if (req.body && Object.keys(req.body).length > 0) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+    }
+
+    proxyReq.end();
+}
+
+// Auth Routes (Proxy to Auth Service) - strip /api/auth prefix
+app.use('/api/auth', (req, res) => {
+    proxyRequest('auth-service', 8001, '/api/auth', req, res);
+});
+
+// Inventory Routes
+app.use('/api/inventory', (req, res) => {
+    proxyRequest('inventory-service', 8002, null, req, res);
+});
+
+// SOC Routes
+app.use('/api/soc', (req, res) => {
+    proxyRequest('soc-service', 8003, null, req, res);
+});
+
+// AI Routes
+app.use('/api/ai', (req, res) => {
+    proxyRequest('ai-service', 8004, null, req, res);
+});
+
+// Reports Routes
+app.use('/api/reports', (req, res) => {
+    proxyRequest('reports-service', 8005, null, req, res);
+});
 
 app.listen(PORT, () => {
     console.log(`API Gateway running on port ${PORT}`);

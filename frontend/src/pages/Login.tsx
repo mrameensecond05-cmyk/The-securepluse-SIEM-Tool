@@ -1,26 +1,64 @@
-import React, { useState } from 'react';
-import { Box, Typography, Container, Paper, Stack, alpha, useTheme, TextField, Button, Alert, CircularProgress } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Container, Paper, Stack, alpha, useTheme, TextField, Button, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Users } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../store';
-import { loginUser } from '../store/authSlice';
+import { Shield, Lock, Users, Mail } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const theme = useTheme();
-    const dispatch = useAppDispatch();
-    const { loading, error } = useAppSelector((state) => state.auth);
 
+    const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
-    const handleLogin = async (e: React.FormEvent) => {
+    // Initialize admin user if it doesn't exist
+    useEffect(() => {
+        const users = JSON.parse(localStorage.getItem('sp_users') || '[]');
+        if (users.length === 0) {
+            users.push({ username: 'admin', password: 'admin123', email: 'admin@securepulse.local' });
+            localStorage.setItem('sp_users', JSON.stringify(users));
+        }
+    }, []);
+
+    const handleAction = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            await dispatch(loginUser({ username, password })).unwrap();
-            navigate('/dashboard');
-        } catch (err) {
-            console.error('Login failed:', err);
+        setError(null);
+        setSuccess(null);
+
+        const users = JSON.parse(localStorage.getItem('sp_users') || '[]');
+
+        if (isRegister) {
+            // Registration Logic
+            if (!username || !password || !email) {
+                setError('Please fill in all fields');
+                return;
+            }
+
+            if (users.find((u: any) => u.username === username)) {
+                setError('Username already exists');
+                return;
+            }
+
+            users.push({ username, password, email });
+            localStorage.setItem('sp_users', JSON.stringify(users));
+            setSuccess('Registration successful! Please login.');
+            setIsRegister(false);
+            setUsername('');
+            setPassword('');
+            setEmail('');
+        } else {
+            // Login Logic
+            const user = users.find((u: any) => u.username === username && u.password === password);
+            if (user) {
+                localStorage.setItem('token', `mock-token-${username}`);
+                localStorage.setItem('user', JSON.stringify({ username: user.username, role: 'admin' }));
+                navigate('/dashboard');
+            } else {
+                setError('Invalid username or password');
+            }
         }
     };
 
@@ -33,7 +71,7 @@ const LoginPage: React.FC = () => {
                 justifyContent: 'center',
                 bgcolor: 'background.default',
                 p: 2,
-                backgroundImage: 'radial-gradient(circle at 50% 0%, #1a1d2d 0%, #05060a 100%)',
+                backgroundImage: 'radial-gradient(circle at 50% 0%, #1a1d3d 0%, #05060a 100%)',
             }}
         >
             <Container maxWidth="lg">
@@ -46,7 +84,6 @@ const LoginPage: React.FC = () => {
                         gap: 8,
                     }}
                 >
-                    {/* Left Side: Branding */}
                     <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
                         <Box sx={{
                             display: 'inline-flex',
@@ -59,7 +96,7 @@ const LoginPage: React.FC = () => {
                             <Shield size={48} color={theme.palette.primary.main} strokeWidth={1.5} />
                         </Box>
 
-                        <Typography variant="h2" sx={{ mb: 1, letterSpacing: '-0.03em' }}>
+                        <Typography variant="h2" sx={{ mb: 1, letterSpacing: '-0.03em', fontWeight: 700 }}>
                             SECURE<span style={{ color: theme.palette.primary.main }}>PULSE</span>
                         </Typography>
 
@@ -85,30 +122,28 @@ const LoginPage: React.FC = () => {
                         </Stack>
                     </Box>
 
-                    {/* Right Side: Login Form */}
                     <Paper
                         elevation={0}
                         sx={{
                             flex: 0.8,
                             p: 5,
-                            bgcolor: 'background.paper',
+                            bgcolor: alpha(theme.palette.background.paper, 0.8),
+                            backdropFilter: 'blur(10px)',
                             border: '1px solid',
-                            borderColor: 'divider',
+                            borderColor: alpha(theme.palette.divider, 0.1),
                             width: '100%',
-                            maxWidth: 500,
+                            maxWidth: 450,
+                            borderRadius: 4,
                         }}
                     >
-                        <Typography variant="h5" sx={{ mb: 4, fontFamily: 'monospace' }}>
-                            Authorized Access
+                        <Typography variant="h5" sx={{ mb: 4, fontWeight: 600 }}>
+                            {isRegister ? 'Create Account' : 'Authorized Access'}
                         </Typography>
 
-                        {error && (
-                            <Alert severity="error" sx={{ mb: 3 }}>
-                                {error}
-                            </Alert>
-                        )}
+                        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+                        {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
 
-                        <form onSubmit={handleLogin}>
+                        <form onSubmit={handleAction}>
                             <Stack spacing={3}>
                                 <TextField
                                     fullWidth
@@ -120,6 +155,19 @@ const LoginPage: React.FC = () => {
                                         startAdornment: <Users size={20} color={theme.palette.text.secondary} style={{ marginRight: 8 }} />,
                                     }}
                                 />
+                                {isRegister && (
+                                    <TextField
+                                        fullWidth
+                                        label="Email Address"
+                                        type="email"
+                                        variant="outlined"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        InputProps={{
+                                            startAdornment: <Mail size={20} color={theme.palette.text.secondary} style={{ marginRight: 8 }} />,
+                                        }}
+                                    />
+                                )}
                                 <TextField
                                     fullWidth
                                     label="Password"
@@ -135,18 +183,29 @@ const LoginPage: React.FC = () => {
                                     type="submit"
                                     variant="contained"
                                     size="large"
-                                    disabled={loading}
-                                    sx={{ py: 1.5, fontSize: '1rem', fontWeight: 600 }}
+                                    sx={{ py: 1.8, fontSize: '1rem', fontWeight: 600, borderRadius: 2 }}
                                 >
-                                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                                    {isRegister ? 'Register' : 'Sign In'}
                                 </Button>
                             </Stack>
                         </form>
 
-                        <Typography variant="caption" sx={{ mt: 3, display: 'block', textAlign: 'center', color: 'text.secondary' }}>
-                            Protected by SecurePulse Auth Gateway.
-                            <br />
-                            Unauthorized access attempts are logged.
+                        <Box sx={{ mt: 3, textAlign: 'center' }}>
+                            <Button
+                                variant="text"
+                                color="primary"
+                                onClick={() => {
+                                    setIsRegister(!isRegister);
+                                    setError(null);
+                                    setSuccess(null);
+                                }}
+                            >
+                                {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
+                            </Button>
+                        </Box>
+
+                        <Typography variant="caption" sx={{ mt: 4, display: 'block', textAlign: 'center', color: 'text.secondary', opacity: 0.6 }}>
+                            SECUREPULSE AUTH GATEWAY (LOCAL)
                         </Typography>
                     </Paper>
                 </Box>

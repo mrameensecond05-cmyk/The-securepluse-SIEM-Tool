@@ -3,6 +3,7 @@ import axios from 'axios';
 // Create an axios instance with a default config
 const client = axios.create({
     baseURL: '/api', // Nginx proxies /api to the API Gateway
+    timeout: 15000, // 15 second timeout to avoid long hangs
     headers: {
         'Content-Type': 'application/json',
     },

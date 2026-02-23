@@ -4,7 +4,7 @@ opensearch.hosts: ["https://wazuh-indexer:9200"]
 
 opensearch.ssl.verificationMode: none
 opensearch.username: admin
-opensearch.password: SecretPassword1!
+opensearch.password: admin
 
 opensearch.requestHeadersWhitelist: [authorization, securitytenant]
 

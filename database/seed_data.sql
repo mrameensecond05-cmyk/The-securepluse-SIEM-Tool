@@ -1,8 +1,8 @@
 -- Initial Users (Passwords: admin=admin123, analyst=analyst123, jdoe=user123)
 INSERT INTO users (username, email, password_hash, role) VALUES 
-('admin', 'admin@securepulse.local', '$2b$12$h8TshoDmZDSPiNksW6nlce6hniFeXZYnb8RDC02LW/POOoujm23cq', 'admin'),
-('analyst', 'analyst@securepulse.local', '$2b$12$aKbWeByA/oWK5D34lP/4c.DvFgh2zzJGClzRlFep9VicUl7nnAOM.', 'analyst'),
-('jdoe', 'jdoe@securepulse.local', '$2b$12$ofC2spBmQQnbXAuOZGcwOOafga04uQV4Nd4judxxijch9ELImXjeO', 'user');
+('admin', 'admin@securepulse.local', 'admin123', 'admin'),
+('analyst', 'analyst@securepulse.local', 'analyst123', 'analyst'),
+('jdoe', 'jdoe@securepulse.local', 'user123', 'user');
 
 -- Sample Assets
 INSERT INTO assets (name, ip_address, type, criticality, environment) VALUES 

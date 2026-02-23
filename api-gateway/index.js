@@ -17,23 +17,10 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'healthy', service: 'api-gateway' });
 });
 
-// Auth Middleware (Placeholder for now)
+// Auth Middleware - Disabled (no security authentication needed)
 const authenticateToken = (req, res, next) => {
-    // Skip auth for login/register
-    if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
-        return next();
-    }
-
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token == null) return res.sendStatus(401);
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next(); // Pass to next middleware/proxy
-    });
+    // Auth is disabled - pass through all requests
+    next();
 };
 
 // Routes

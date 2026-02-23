@@ -20,13 +20,10 @@ export const loginUser = createAsyncThunk(
     'auth/login',
     async (credentials: any, { rejectWithValue }) => {
         try {
-            // Auth service uses OAuth2PasswordRequestForm which expects form-encoded data
-            const formData = new URLSearchParams();
-            formData.append('username', credentials.username);
-            formData.append('password', credentials.password);
-
-            const response = await client.post('/auth/login', formData, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            // Simple JSON login - no OAuth2 form encoding needed
+            const response = await client.post('/auth/login', {
+                username: credentials.username,
+                password: credentials.password,
             });
             return response.data;
         } catch (error: any) {

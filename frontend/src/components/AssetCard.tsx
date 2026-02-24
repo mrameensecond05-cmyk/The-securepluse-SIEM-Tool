@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Paper, Typography, Button, Chip, useTheme, alpha } from '@mui/material';
-import { Monitor, Server, Smartphone, Circle, Activity } from 'lucide-react';
+import { Box, Paper, Typography, Button, Chip, useTheme, alpha, Stack } from '@mui/material';
+import { Monitor, Server, Smartphone, Circle, Activity, Shield, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export interface Asset {
     id: string;
@@ -22,9 +23,9 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, onViewLogs }) => {
 
     const getIcon = () => {
         switch (asset.type) {
-            case 'server': return <Server size={24} />;
-            case 'mobile': return <Smartphone size={24} />;
-            default: return <Monitor size={24} />;
+            case 'server': return <Server size={22} />;
+            case 'mobile': return <Smartphone size={22} />;
+            default: return <Monitor size={22} />;
         }
     };
 
@@ -37,68 +38,131 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, onViewLogs }) => {
         }
     };
 
+    // Format timestamp to be shorter and readable
+    const formatLastSeen = (ts: string) => {
+        if (!ts || ts === 'Unknown') return 'Never';
+        try {
+            const date = new Date(ts);
+            if (isNaN(date.getTime())) return ts.substring(0, 16).replace('T', ' ');
+            return date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return ts;
+        }
+    };
+
     return (
         <Paper
+            component={motion.div}
+            whileHover={{ y: -5 }}
             sx={{
-                p: 3,
-                borderRadius: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                p: 2.5,
+                borderRadius: 4,
+                bgcolor: alpha(theme.palette.background.paper, 0.4),
+                backdropFilter: 'blur(10px)',
                 border: '1px solid',
-                borderColor: 'divider',
-                transition: 'all 0.2s',
+                borderColor: alpha(theme.palette.divider, 0.1),
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease-in-out',
                 '&:hover': {
-                    borderColor: 'primary.main',
-                    boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.1)}`,
-                    transform: 'translateY(-2px)'
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.15)}`,
+                    '& .asset-glow': {
+                        opacity: 0.2
+                    }
                 }
             }}
         >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            {/* Background Glow Effect */}
+            <Box
+                className="asset-glow"
+                sx={{
+                    position: 'absolute',
+                    top: -20,
+                    right: -20,
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    bgcolor: getStatusColor(),
+                    filter: 'blur(40px)',
+                    opacity: 0,
+                    transition: 'opacity 0.3s'
+                }}
+            />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, zIndex: 1 }}>
                 <Box
                     sx={{
-                        p: 1.5,
-                        borderRadius: 2,
+                        p: 1.25,
+                        borderRadius: 2.5,
                         bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: theme.palette.primary.main
+                        color: theme.palette.primary.main,
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.primary.main, 0.2)
                     }}
                 >
                     {getIcon()}
                 </Box>
                 <Chip
+                    icon={<Circle size={8} fill={getStatusColor()} style={{ marginLeft: 4 }} />}
                     label={asset.status.toUpperCase()}
                     size="small"
                     sx={{
+                        fontSize: '0.65rem',
+                        fontWeight: 900,
+                        height: 22,
                         bgcolor: alpha(getStatusColor(), 0.1),
                         color: getStatusColor(),
-                        fontWeight: 700,
                         border: '1px solid',
-                        borderColor: alpha(getStatusColor(), 0.2)
+                        borderColor: alpha(getStatusColor(), 0.3),
+                        '& .MuiChip-icon': { color: 'inherit' }
                     }}
                 />
             </Box>
 
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                {asset.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: 'monospace' }}>
-                {asset.ip}
-            </Typography>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <Circle size={8} fill={getStatusColor()} color={getStatusColor()} />
-                <Typography variant="caption" color="text.secondary">
-                    Last seen: {asset.lastSeen}
+            <Box sx={{ flexGrow: 1, zIndex: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-0.01em', wordBreak: 'break-word' }}>
+                    {asset.name}
                 </Typography>
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                    <Shield size={14} color={theme.palette.text.secondary} />
+                    <Typography variant="body2" sx={{
+                        color: 'text.secondary',
+                        fontFamily: "'Fira Code', 'Courier New', monospace",
+                        fontSize: '0.8rem',
+                        opacity: 0.8
+                    }}>
+                        {asset.ip}
+                    </Typography>
+                </Stack>
+
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
+                    <Clock size={12} color={theme.palette.text.disabled} />
+                    <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600 }}>
+                        LAST SEEN: {formatLastSeen(asset.lastSeen)}
+                    </Typography>
+                </Stack>
             </Box>
 
             <Button
-                variant="outlined"
+                variant="contained"
                 fullWidth
                 startIcon={<Activity size={16} />}
                 onClick={() => onViewLogs(asset.id)}
                 sx={{
-                    borderRadius: 2,
+                    mt: 'auto',
+                    borderRadius: 2.5,
                     textTransform: 'none',
-                    fontWeight: 600
+                    fontWeight: 700,
+                    py: 1,
+                    background: alpha(theme.palette.primary.main, 1),
+                    '&:hover': {
+                        background: theme.palette.primary.dark,
+                    },
+                    zIndex: 1
                 }}
             >
                 View Logs

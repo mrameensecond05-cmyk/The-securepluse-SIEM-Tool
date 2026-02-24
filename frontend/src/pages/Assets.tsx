@@ -72,13 +72,15 @@ const Assets: React.FC = () => {
                     <Typography sx={{ mt: 2 }} color="text.secondary">Fetching live assets from Wazuh...</Typography>
                 </Box>
             ) : (
-                <Grid container spacing={3}>
-                    {assets.map((asset) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={asset.id}>
-                            <AssetCard asset={asset} onViewLogs={handleViewLogs} />
-                        </Grid>
-                    ))}
-                </Grid>
+                <Box sx={{ width: '100%', mb: 4 }}>
+                    <Grid container spacing={4}>
+                        {assets.map((asset) => (
+                            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={asset.id} sx={{ display: 'flex' }}>
+                                <AssetCard asset={asset} onViewLogs={handleViewLogs} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Box>
             )}
         </Box>
     );

@@ -1,23 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Button } from '@mui/material';
-import { Plus, Filter } from 'lucide-react';
+import { Plus, Filter, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import AssetCard, { type Asset } from '../components/AssetCard';
-
-const dummyAssets: Asset[] = [
-    { id: '1', name: 'Web-Server-01', ip: 'internal-srv-01', type: 'server', os: 'linux', status: 'online', lastSeen: 'Just now' },
-    { id: '2', name: 'DB-Prod-01', ip: 'internal-db-01', type: 'server', os: 'linux', status: 'online', lastSeen: '2 mins ago' },
-    { id: '3', name: 'Workstation-HR', ip: 'hr-dept-ws', type: 'workstation', os: 'windows', status: 'offline', lastSeen: '2 days ago' },
-    { id: '4', name: 'Dev-Laptop-04', ip: 'dev-lab-04', type: 'workstation', os: 'macos', status: 'online', lastSeen: '5 mins ago' },
-    { id: '5', name: 'CEO-iPad', ip: 'mgmt-mobile', type: 'mobile', os: 'ios', status: 'warning', lastSeen: '1 hour ago' },
-    { id: '6', name: 'Firewall-Main', ip: 'perimeter-fw', type: 'server', os: 'linux', status: 'online', lastSeen: 'Just now' },
-    { id: '7', name: 'Backup-Server', ip: 'backup-srv', type: 'server', os: 'windows', status: 'offline', lastSeen: '5 hours ago' },
-    { id: '8', name: 'Guest-Reception', ip: 'guest-wifi', type: 'workstation', os: 'windows', status: 'online', lastSeen: '10 mins ago' },
-];
+import client from '../api/client';
 
 const Assets: React.FC = () => {
+    const navigate = useNavigate();
+    const [assets, setAssets] = useState<Asset[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAssets = async () => {
+            try {
+                const response = await client.get('/soc/agents');
+                // Map Wazuh format to our Asset type if needed
+                const items = response.data.data.affected_items.map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                    ip: item.ip,
+                    type: item.os.name.toLowerCase().includes('windows') ? 'workstation' : 'server',
+                    os: item.os.name.toLowerCase().includes('windows') ? 'windows' : 'linux',
+                    status: item.status === 'active' ? 'online' : 'offline',
+                    lastSeen: item.lastKeepAlive || 'Unknown'
+                }));
+                setAssets(items);
+            } catch (error) {
+                console.error("Error fetching agents:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAssets();
+    }, []);
+
     const handleViewLogs = (id: string) => {
-        console.log(`View logs for asset ${id}`);
-        // Navigate or show modal
+        const asset = assets.find(a => a.id === id);
+        if (asset) {
+            navigate('/logs', { state: { filter: asset.name } });
+        }
     };
 
     return (
@@ -45,13 +66,20 @@ const Assets: React.FC = () => {
                 </Box>
             </Box>
 
-            <Grid container spacing={3}>
-                {dummyAssets.map((asset) => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={asset.id}>
-                        <AssetCard asset={asset} onViewLogs={handleViewLogs} />
-                    </Grid>
-                ))}
-            </Grid>
+            {loading ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 10 }}>
+                    <Loader2 className="animate-spin" size={48} color="#6366f1" />
+                    <Typography sx={{ mt: 2 }} color="text.secondary">Fetching live assets from Wazuh...</Typography>
+                </Box>
+            ) : (
+                <Grid container spacing={3}>
+                    {assets.map((asset) => (
+                        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={asset.id}>
+                            <AssetCard asset={asset} onViewLogs={handleViewLogs} />
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
         </Box>
     );
 };

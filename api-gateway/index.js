@@ -77,7 +77,7 @@ app.use('/api/inventory', (req, res) => {
 
 // SOC Routes
 app.use('/api/soc', (req, res) => {
-    proxyRequest('soc-service', 8003, null, req, res);
+    proxyRequest('soc-service', 8003, '/api/soc', req, res);
 });
 
 // AI Routes

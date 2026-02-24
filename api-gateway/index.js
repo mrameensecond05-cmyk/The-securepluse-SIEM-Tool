@@ -82,7 +82,7 @@ app.use('/api/soc', (req, res) => {
 
 // AI Routes
 app.use('/api/ai', (req, res) => {
-    proxyRequest('ai-service', 8004, null, req, res);
+    proxyRequest('ai-service', 8004, '/api/ai', req, res);
 });
 
 // Reports Routes

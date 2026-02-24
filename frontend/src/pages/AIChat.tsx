@@ -59,7 +59,7 @@ const AIChat: React.FC = () => {
                 },
                 body: JSON.stringify({
                     messages: [{ role: "user", content: currentInput }],
-                    model: "phi3", // Using installed phi3 model
+                    model: "tinyllama", // Using lightweight tinyllama for faster responses
                     stream: false
                 })
             });
